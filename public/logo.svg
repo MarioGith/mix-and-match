@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f97316"/>
+      <stop offset="100%" style="stop-color:#ec4899"/>
+    </linearGradient>
+  </defs>
+  <!-- Background circle -->
+  <circle cx="256" cy="256" r="240" fill="url(#gradient)"/>
+  <!-- Left ingredient circle -->
+  <circle cx="180" cy="220" r="80" fill="white" opacity="0.95"/>
+  <!-- Right ingredient circle -->
+  <circle cx="332" cy="220" r="80" fill="white" opacity="0.95"/>
+  <!-- Plus sign -->
+  <rect x="244" y="200" width="24" height="60" rx="4" fill="white"/>
+  <rect x="232" y="218" width="48" height="24" rx="4" fill="white"/>
+  <!-- Heart/match indicator at bottom -->
+  <path d="M256 340 C256 340 200 300 200 270 C200 250 220 235 245 250 C256 258 256 258 256 258 C256 258 256 258 267 250 C292 235 312 250 312 270 C312 300 256 340 256 340Z" fill="white" opacity="0.95"/>
+</svg>

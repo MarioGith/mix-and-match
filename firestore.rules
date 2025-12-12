@@ -1,0 +1,52 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper function to check if user owns the document
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    // Users collection - users can only read/write their own data
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isOwner(userId);
+      allow update, delete: if isOwner(userId);
+    }
+
+    // Groups collection - any authenticated user can create/read groups
+    match /groups/{groupId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated(); // For memberCount updates
+      allow delete: if false; // Only admin can delete groups
+    }
+
+    // Group members - users can join/leave groups
+    match /groupMembers/{memberId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow update: if false; // No updates needed
+    }
+
+    // Ingredients - any authenticated user can read, only admins should write
+    // For simplicity, allowing any authenticated user to manage ingredients
+    match /ingredients/{ingredientId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isAuthenticated();
+    }
+
+    // Swipes - users can only create their own swipes, everyone can read
+    match /swipes/{swipeId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if false; // Swipes are immutable
+    }
+  }
+}
