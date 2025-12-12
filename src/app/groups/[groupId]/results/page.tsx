@@ -163,7 +163,7 @@ export default function GroupResultsPage() {
 
   if (loading || isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-pink-50 p-4">
+      <div className="min-h-dvh bg-gradient-to-br from-orange-50 to-pink-50 p-4">
         <div className="max-w-6xl mx-auto space-y-6">
           <div className="flex justify-between">
             <Skeleton className="h-10 w-32" />
@@ -191,7 +191,7 @@ export default function GroupResultsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-pink-50 p-4">
+    <div className="min-h-dvh bg-gradient-to-br from-orange-50 to-pink-50 p-4">
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center flex-wrap gap-2">

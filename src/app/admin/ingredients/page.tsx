@@ -122,7 +122,7 @@ export default function AdminIngredientsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen p-4 bg-gradient-to-br from-orange-50 to-pink-50">
+      <div className="min-h-dvh p-4 bg-gradient-to-br from-orange-50 to-pink-50">
         <div className="max-w-4xl mx-auto space-y-6">
           <Skeleton className="h-10 w-20" />
           <Card>
@@ -150,7 +150,7 @@ export default function AdminIngredientsPage() {
   }
 
   return (
-    <div className="min-h-screen p-4 bg-gradient-to-br from-orange-50 to-pink-50">
+    <div className="min-h-dvh p-4 bg-gradient-to-br from-orange-50 to-pink-50">
       <div className="max-w-4xl mx-auto space-y-6">
         <Button variant="ghost" onClick={() => router.push("/")}>
           ← Back

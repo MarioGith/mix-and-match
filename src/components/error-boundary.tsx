@@ -36,7 +36,7 @@ export class ErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-orange-50 to-pink-50">
+        <div className="min-h-dvh flex items-center justify-center p-4 bg-gradient-to-br from-orange-50 to-pink-50">
           <Card className="w-full max-w-md">
             <CardContent className="py-12 text-center">
               <AlertTriangle className="w-12 h-12 mx-auto mb-4 text-destructive" />

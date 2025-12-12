@@ -94,7 +94,7 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-orange-50 to-pink-50">
+      <div className="min-h-dvh flex items-center justify-center p-4 bg-gradient-to-br from-orange-50 to-pink-50">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <Skeleton className="h-10 w-48 mx-auto mb-2" />
@@ -111,7 +111,7 @@ export default function Home() {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-orange-50 to-pink-50">
+      <div className="min-h-dvh flex items-center justify-center p-4 bg-gradient-to-br from-orange-50 to-pink-50">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <CardTitle className="text-4xl mb-2">Mix & Match</CardTitle>
@@ -130,7 +130,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-orange-50 to-pink-50">
+    <div className="min-h-dvh flex items-center justify-center p-4 bg-gradient-to-br from-orange-50 to-pink-50">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-3xl mb-2">Welcome back!</CardTitle>

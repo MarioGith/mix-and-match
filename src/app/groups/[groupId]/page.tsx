@@ -41,11 +41,13 @@ export default function GroupSwipePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [allPairsSwiped, setAllPairsSwiped] = useState(false);
 
+  const [exitDirection, setExitDirection] = useState<"left" | "right" | null>(null);
+  const [isAnimating, setIsAnimating] = useState(false);
+
   const x = useMotionValue(0);
-  const rotate = useTransform(x, [-200, 200], [-25, 25]);
-  const opacity = useTransform(x, [-200, -100, 0, 100, 200], [0, 1, 1, 1, 0]);
-  const leftIndicatorOpacity = useTransform(x, [-100, 0], [1, 0]);
-  const rightIndicatorOpacity = useTransform(x, [0, 100], [0, 1]);
+  const rotate = useTransform(x, [-200, 200], [-15, 15]);
+  const leftIndicatorOpacity = useTransform(x, [-80, 0], [1, 0]);
+  const rightIndicatorOpacity = useTransform(x, [0, 80], [0, 1]);
 
   const getPairKey = (id1: string, id2: string) => {
     return [id1, id2].sort().join("-");
@@ -164,37 +166,48 @@ export default function GroupSwipePage() {
   const recordSwipe = async (vote: VoteType) => {
     if (!currentPair || !user) return;
 
-    await addDoc(collection(db, "swipes"), {
-      userId: user.uid,
-      userName: user.displayName || "Anonymous",
-      groupId,
-      ingredient1Id: currentPair.ingredient1.id,
-      ingredient2Id: currentPair.ingredient2.id,
-      vote,
-      timestamp: Timestamp.now(),
-    });
+    try {
+      await addDoc(collection(db, "swipes"), {
+        userId: user.uid,
+        userName: user.displayName || "Anonymous",
+        groupId,
+        ingredient1Id: currentPair.ingredient1.id,
+        ingredient2Id: currentPair.ingredient2.id,
+        vote,
+        timestamp: Timestamp.now(),
+      });
+    } catch (error) {
+      console.error("Error recording swipe:", error);
+    }
+  };
 
+  const handleVote = (vote: VoteType, direction: "left" | "right" | null = null) => {
+    if (!currentPair || isAnimating) return;
+
+    setIsAnimating(true);
+    setExitDirection(direction || (vote === "like" ? "right" : "left"));
+
+    // Fire and forget - don't wait for database
+    recordSwipe(vote);
+    checkForMatch(vote);
+
+    // Update local state immediately
     setSwipedPairs((prev) => new Set([...prev, currentPair.key]));
   };
 
-  const handleVote = async (vote: VoteType) => {
-    if (!currentPair) return;
-
-    await recordSwipe(vote);
-    await checkForMatch(vote);
-
-    setTimeout(() => {
-      generateNewPair();
-    }, 100);
+  const handleExitComplete = () => {
+    setExitDirection(null);
+    setIsAnimating(false);
+    generateNewPair();
   };
 
-  const handleDragEnd = async () => {
+  const handleDragEnd = () => {
     const xValue = x.get();
 
-    if (xValue > 100) {
-      await handleVote("like");
-    } else if (xValue < -100) {
-      await handleVote("dislike");
+    if (xValue > 80) {
+      handleVote("like", "right");
+    } else if (xValue < -80) {
+      handleVote("dislike", "left");
     } else {
       x.set(0);
     }
@@ -202,7 +215,7 @@ export default function GroupSwipePage() {
 
   if (loading || isLoading) {
     return (
-      <div className="min-h-screen flex flex-col bg-gradient-to-br from-orange-50 to-pink-50">
+      <div className="min-h-dvh flex flex-col bg-gradient-to-br from-orange-50 to-pink-50">
         <div className="p-4 flex justify-between items-center">
           <Skeleton className="h-10 w-20" />
           <div className="flex gap-2">
@@ -229,7 +242,7 @@ export default function GroupSwipePage() {
 
   if (ingredients.length < 2) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-orange-50 to-pink-50">
+      <div className="min-h-dvh flex items-center justify-center p-4 bg-gradient-to-br from-orange-50 to-pink-50">
         <Card className="w-full max-w-md">
           <CardContent>
             <EmptyState
@@ -248,7 +261,7 @@ export default function GroupSwipePage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-orange-50 to-pink-50">
+    <div className="min-h-dvh flex flex-col bg-gradient-to-br from-orange-50 to-pink-50">
       {/* Celebration overlay */}
       <AnimatePresence>
         {showCelebration && (
@@ -330,64 +343,113 @@ export default function GroupSwipePage() {
               </EmptyState>
             </CardContent>
           </Card>
-        ) : currentPair ? (
+        ) : (
           <div className="relative w-full max-w-sm h-[500px]">
-            <motion.div
-              key={currentPair.key}
-              style={{ x, rotate, opacity }}
-              drag="x"
-              dragConstraints={{ left: 0, right: 0 }}
-              onDragEnd={handleDragEnd}
-              className="absolute inset-0 cursor-grab active:cursor-grabbing"
-            >
-              <div className="w-full h-full bg-card backdrop-blur-xl border border-border/50 rounded-3xl shadow-2xl shadow-black/10 p-8 flex flex-col items-center justify-center space-y-8">
-                <div className="flex items-center gap-4">
-                  <div className="text-center">
-                    <div className="text-7xl mb-2">
-                      {currentPair.ingredient1.emoji}
+            <AnimatePresence mode="wait" onExitComplete={handleExitComplete}>
+              {currentPair && !exitDirection && (
+                <motion.div
+                  key={currentPair.key}
+                  initial={{ scale: 0.95, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1, x: 0, rotate: 0 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                  style={{ x, rotate }}
+                  drag="x"
+                  dragConstraints={{ left: 0, right: 0 }}
+                  dragElastic={0.9}
+                  onDragEnd={handleDragEnd}
+                  className="absolute inset-0 cursor-grab active:cursor-grabbing touch-none"
+                >
+                  <div className="w-full h-full bg-card backdrop-blur-xl border border-border/50 rounded-3xl shadow-2xl shadow-black/10 p-8 flex flex-col items-center justify-center space-y-8">
+                    <div className="flex items-center gap-4">
+                      <div className="text-center">
+                        <div className="text-7xl mb-2">
+                          {currentPair.ingredient1.emoji}
+                        </div>
+                        <p className="text-xl font-semibold">
+                          {currentPair.ingredient1.name}
+                        </p>
+                      </div>
+                      <div className="text-4xl">+</div>
+                      <div className="text-center">
+                        <div className="text-7xl mb-2">
+                          {currentPair.ingredient2.emoji}
+                        </div>
+                        <p className="text-xl font-semibold">
+                          {currentPair.ingredient2.name}
+                        </p>
+                      </div>
                     </div>
-                    <p className="text-xl font-semibold">
-                      {currentPair.ingredient1.name}
+                    <p className="text-muted-foreground text-sm">
+                      Swipe or tap below
                     </p>
                   </div>
-                  <div className="text-4xl">+</div>
-                  <div className="text-center">
-                    <div className="text-7xl mb-2">
-                      {currentPair.ingredient2.emoji}
-                    </div>
-                    <p className="text-xl font-semibold">
-                      {currentPair.ingredient2.name}
-                    </p>
-                  </div>
-                </div>
-                <p className="text-muted-foreground text-sm">
-                  Swipe or tap below
-                </p>
-              </div>
 
-              {/* Swipe indicators */}
-              <motion.div
-                className="absolute top-12 left-12 text-6xl font-bold text-destructive"
-                style={{ opacity: leftIndicatorOpacity }}
-              >
-                ✗
-              </motion.div>
-              <motion.div
-                className="absolute top-12 right-12 text-6xl font-bold text-green-500"
-                style={{ opacity: rightIndicatorOpacity }}
-              >
-                ✓
-              </motion.div>
-            </motion.div>
+                  {/* Swipe indicators */}
+                  <motion.div
+                    className="absolute top-12 left-12 text-6xl font-bold text-destructive"
+                    style={{ opacity: leftIndicatorOpacity }}
+                  >
+                    ✗
+                  </motion.div>
+                  <motion.div
+                    className="absolute top-12 right-12 text-6xl font-bold text-green-500"
+                    style={{ opacity: rightIndicatorOpacity }}
+                  >
+                    ✓
+                  </motion.div>
+                </motion.div>
+              )}
+              {currentPair && exitDirection && (
+                <motion.div
+                  key={`${currentPair.key}-exit`}
+                  initial={{ x: 0, rotate: 0, opacity: 1 }}
+                  animate={{
+                    x: exitDirection === "right" ? 400 : -400,
+                    rotate: exitDirection === "right" ? 20 : -20,
+                    opacity: 0,
+                  }}
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                  className="absolute inset-0"
+                >
+                  <div className="w-full h-full bg-card backdrop-blur-xl border border-border/50 rounded-3xl shadow-2xl shadow-black/10 p-8 flex flex-col items-center justify-center space-y-8">
+                    <div className="flex items-center gap-4">
+                      <div className="text-center">
+                        <div className="text-7xl mb-2">
+                          {currentPair.ingredient1.emoji}
+                        </div>
+                        <p className="text-xl font-semibold">
+                          {currentPair.ingredient1.name}
+                        </p>
+                      </div>
+                      <div className="text-4xl">+</div>
+                      <div className="text-center">
+                        <div className="text-7xl mb-2">
+                          {currentPair.ingredient2.emoji}
+                        </div>
+                        <p className="text-xl font-semibold">
+                          {currentPair.ingredient2.name}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Exit indicator */}
+                  <div className={`absolute top-12 ${exitDirection === "right" ? "right-12 text-green-500" : "left-12 text-destructive"} text-6xl font-bold`}>
+                    {exitDirection === "right" ? "✓" : "✗"}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
-        ) : null}
+        )}
       </div>
 
       {/* Action Buttons */}
       {!allPairsSwiped && currentPair && (
         <div className="p-8 flex justify-center gap-4">
           <Button
-            onClick={() => handleVote("dislike")}
+            onClick={() => handleVote("dislike", "left")}
+            disabled={isAnimating}
             size="lg"
             variant="destructive"
             className="w-16 h-16 rounded-full text-2xl"
@@ -395,7 +457,8 @@ export default function GroupSwipePage() {
             ✗
           </Button>
           <Button
-            onClick={() => handleVote("pass")}
+            onClick={() => handleVote("pass", "left")}
+            disabled={isAnimating}
             size="lg"
             variant="outline"
             className="w-16 h-16 rounded-full text-2xl"
@@ -403,7 +466,8 @@ export default function GroupSwipePage() {
             →
           </Button>
           <Button
-            onClick={() => handleVote("like")}
+            onClick={() => handleVote("like", "right")}
+            disabled={isAnimating}
             size="lg"
             className="w-16 h-16 rounded-full text-2xl bg-green-500 hover:bg-green-600"
           >

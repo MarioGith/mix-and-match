@@ -127,7 +127,7 @@ export default function GroupFeedPage() {
 
   if (loading || isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-pink-50 p-4">
+      <div className="min-h-dvh bg-gradient-to-br from-orange-50 to-pink-50 p-4">
         <div className="max-w-2xl mx-auto space-y-4">
           <Skeleton className="h-10 w-32" />
           <Card>
@@ -151,7 +151,7 @@ export default function GroupFeedPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-pink-50 p-4">
+    <div className="min-h-dvh bg-gradient-to-br from-orange-50 to-pink-50 p-4">
       <div className="max-w-2xl mx-auto space-y-4">
         {/* Header */}
         <div className="flex justify-between items-center">

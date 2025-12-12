@@ -109,7 +109,7 @@ export default function MyGroupsPage() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 to-pink-50">
+      <div className="min-h-dvh flex items-center justify-center bg-gradient-to-br from-orange-50 to-pink-50">
         <div className="w-full max-w-md space-y-4 p-4">
           <Skeleton className="h-8 w-48 mx-auto" />
           <Skeleton className="h-32 w-full rounded-2xl" />
@@ -125,7 +125,7 @@ export default function MyGroupsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-pink-50">
+    <div className="min-h-dvh bg-gradient-to-br from-orange-50 to-pink-50">
       <div className="p-4 flex justify-between items-center">
         <Button variant="ghost" onClick={() => router.push("/")}>
           ← Back

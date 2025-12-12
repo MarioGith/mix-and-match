@@ -120,7 +120,7 @@ export default function HistoryPage() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-pink-50 p-4">
+      <div className="min-h-dvh bg-gradient-to-br from-orange-50 to-pink-50 p-4">
         <Skeleton className="h-10 w-20 mb-6" />
         <Skeleton className="h-8 w-48 mx-auto mb-6" />
         <div className="space-y-3 max-w-md mx-auto">
@@ -138,7 +138,7 @@ export default function HistoryPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-pink-50">
+    <div className="min-h-dvh bg-gradient-to-br from-orange-50 to-pink-50">
       <div className="p-4">
         <Button variant="ghost" onClick={() => router.push(`/groups/${groupId}`)}>
           ← Back
